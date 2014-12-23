@@ -9,7 +9,7 @@ import javax.swing.SwingUtilities;
 
 public class GamePanel extends JPanel implements KeyListener {
 
-	protected final int boardSize = 5;
+	protected final int boardSize = 3;
 	protected GameLogic logic = new GameLogic(boardSize);
 	protected int[][] boardData = new int[boardSize][boardSize];
 	
@@ -42,6 +42,8 @@ public class GamePanel extends JPanel implements KeyListener {
 	public void paint(Graphics g) {
 		super.paint(g);
 		BlockRotate.print(boardData);
+		if (logic.getLose()) System.out.println("Lost.");
+		if (logic.getWon()) System.out.println("Won.");
 	}
 
 	@Override

@@ -6,15 +6,16 @@ import java.util.Random;
 
 public class GameLogic {
 
+	protected final int winCondition = 32;
 	protected Random r = new Random();
 	protected int[] newNumbers = {2,4};
-	protected boolean lose, win;
 	
 	protected int brdSize;
 	protected int[][] board;
 	public GameLogic(int brdSize) {
 		this.brdSize = brdSize;
 		board = new int[brdSize][brdSize];
+		generateNewNumbers();
 	}
 	
 	protected GameLogic(int[][] initialBoard) {
@@ -26,11 +27,24 @@ public class GameLogic {
 		return board;
 	}
 	
+	protected boolean equals(int[] l1, int[] l2) {
+		if(l1 == l2) return true;
+		for (int i = 0; i < brdSize; i ++)
+			if(l1[i] != l2[i]) return false;
+		return true;
+	}
+	
 	public int[][] moveLeft() {
+		boolean boardChanged = false;
 		for (int i = 0; i < brdSize; i ++) {
-			board[i] = mergeLine(board[i]);
+			int[] line = mergeLine(board[i]);
+			if(equals(line,board[i])==false) {
+				boardChanged = true;
+				board[i] = line;
+			}
 		}
-		generateNewNumbers();
+		if (boardChanged)
+			generateNewNumbers();
 		return board;
 	}
 	
@@ -61,16 +75,36 @@ public class GameLogic {
 		for (int y = 0; y < brdSize; y ++)
 			for (int x = 0; x < brdSize; x ++)
 				if (board[y][x] == 0) zeros.add(y * brdSize + x);
-		if (zeros.size() == 0) {
-			lose = true;
-			return;
-		}
+		if (zeros.size() == 0) return;
 		zeros = generateNewNumberUtil(zeros);
-		if (zeros.size() == 0) {
-			return;
-		}
+		if (zeros.size() == 0) return;
 		generateNewNumberUtil(zeros);
 	}
+	
+	public boolean getWon() {
+		for (int y = 0; y < brdSize; y ++) 
+			for (int x = 0; x < brdSize; x ++)
+				if (board[y][x] == winCondition) return true;
+		return false;
+	}
+	
+	public boolean getLose() {
+		if(!isFull()) return false;
+		for (int y = 0; y < brdSize - 1; y ++) 
+			for (int x = 0; x < brdSize - 1; x ++) 
+				if (board[y][x] == board[y][x+1] || board[y][x] == board[y+1][x]) return false;
+		if (board[brdSize-2][brdSize-1] == board[brdSize-1][brdSize-1] ||
+			board[brdSize-1][brdSize-2] == board[brdSize-1][brdSize-1]) return false;
+		return true;
+	}
+	
+	protected boolean isFull() {
+		for (int y = 0; y < brdSize; y ++) 
+			for (int x = 0; x < brdSize; x ++)
+				if (board[y][x] == 0) return false;
+		return true;		
+	}
+	
 	
 	protected ArrayList<Integer> generateNewNumberUtil(ArrayList<Integer> blanks) {
 		int idx = r.nextInt(blanks.size());
