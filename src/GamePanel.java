@@ -9,9 +9,11 @@ import javax.swing.SwingUtilities;
 
 public class GamePanel extends JPanel implements KeyListener {
 
-	protected final int boardSize = 5;
+	protected final int boardSize = 3;
 	protected GameLogic logic = new GameLogic(boardSize);
 	protected int[][] boardData = new int[boardSize][boardSize];
+	protected boolean gameLost = false;
+	protected boolean gameWon = false;
 	
 	public GamePanel() {
 		this.setOpaque(true);
@@ -36,12 +38,26 @@ public class GamePanel extends JPanel implements KeyListener {
 			boardData = logic.moveDown();
 			break;
 		}
+		if((gameLost = logic.hasLost()) == true) {
+			
+		}
+		
+		if((gameWon  = logic.hasWon()) == true) {
+
+		}
 		repaint();
 	}
 	
 	public void paint(Graphics g) {
 		super.paint(g);
 		BlockRotate.print(boardData);
+		if(gameLost) {
+			System.out.println("Lost.");
+		}
+		if (gameWon) {
+			System.out.println("True.");			
+		}
+		
 	}
 
 	@Override

@@ -1,22 +1,29 @@
-
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 
 public class GameLogic {
-
+	protected final int winCondition = 2048;
+	protected final int[] newNumbers = {2,4};
 	protected Random r = new Random();
-	protected int[] newNumbers = {2,4};
-	protected boolean lose, win;
+	protected boolean lose = false, win = false;
+	protected int[][][] predictedBoards;
+	protected boolean[] predictedMovable;
 	
 	protected int brdSize;
 	protected int[][] board;
 	public GameLogic(int brdSize) {
 		this.brdSize = brdSize;
 		board = new int[brdSize][brdSize];
+		predictedBoards = new int[4][][];
+		predictedMovable = new boolean[4];
+		generateNewNumbers();
+		predict();
 	}
 	
+	/*
+	 * For test only
+	 */
 	protected GameLogic(int[][] initialBoard) {
 		this.brdSize = initialBoard.length;
 		board = initialBoard;
@@ -26,34 +33,97 @@ public class GameLogic {
 		return board;
 	}
 	
-	public int[][] moveLeft() {
+	protected int[][] move(int[][] board) {
 		for (int i = 0; i < brdSize; i ++) {
 			board[i] = mergeLine(board[i]);
 		}
-		generateNewNumbers();
+		generateNewNumbers();		
 		return board;
 	}
 	
-	public int[][] moveRight() {
-		BlockRotate.rotateClockwise180(board);
-		moveLeft();
-		BlockRotate.rotateClockwise180(board);
-		return board;
+	protected int[][] copy(int[][] oldBoard) {
+		int[][] newBoard = new int[brdSize][brdSize];
+		for (int y = 0; y < brdSize; y ++)
+			for (int x = 0; x < brdSize; x ++)
+				newBoard[y][x] = oldBoard[y][x];
+		return newBoard;
 	}
 	
-	public int[][] moveUp() {
-		BlockRotate.rotateClockwise270(board);
-		moveLeft();
-		BlockRotate.rotateClockwise90(board);
-		return board;
+	protected int[][] moveLeft() {
+		return move(copy(board));
 	}
 	
-	public int[][] moveDown() {
-		BlockRotate.rotateClockwise90(board);
-		moveLeft();
-		BlockRotate.rotateClockwise270(board);		
-		return board;
+	protected int[][] moveRight() {
+		int[][] nBrd = copy(board);
+		BlockRotate.rotateClockwise180(nBrd);
+		nBrd = move(nBrd);
+		BlockRotate.rotateClockwise180(nBrd);
+		return nBrd;
 	}
+	
+	protected int[][] moveUp() {
+		int[][] nBrd = copy(board);
+		BlockRotate.rotateClockwise270(nBrd);
+		nBrd = move(nBrd);
+		BlockRotate.rotateClockwise90(nBrd);
+		return nBrd;
+	}
+	
+	protected int[][] moveDown() {
+		int[][] nBrd = copy(board);
+		BlockRotate.rotateClockwise90(nBrd);
+		nBrd = move(nBrd);
+		BlockRotate.rotateClockwise270(nBrd);
+		return nBrd;
+	}
+	
+	public boolean hasLost() {
+		return lose;
+	}
+	
+	protected void checkWon() {
+		for (int y = 0; y < brdSize; y ++)
+			for (int x = 0; x < brdSize; x ++)
+				if (board[y][x] == 2048) {
+					win = true;
+					return;
+				}
+		win = false;
+	}
+	
+	protected boolean equals(int[][] b1, int[][] b2) {
+		for (int y = 0; y < brdSize; y ++)
+			for (int x = 0; x < brdSize; x ++)
+				if (b1[y][x] != b2[y][x])
+					return false;
+		return true;
+	}
+		
+	/*
+	 * Check for the following conditions:
+	 * win? check for value 2048 in grids
+	 * canMoveLeft? cache the predicted board, if identical with current, set false
+	 * can... 4 all together
+	 * lose? if all 4 predictions are false
+	 */
+	protected void predict() {
+		checkWon();
+		if(equals(predictedBoards[0] = moveLeft(), board)) predictedMovable[0] = false;
+		else predictedMovable[0] = true;
+		
+		if(equals(predictedBoards[1] = moveUp(), board)) predictedMovable[1] = false;
+		else predictedMovable[1] = true;
+
+		if(equals(predictedBoards[2] = moveRight(), board)) predictedMovable[2] = false;
+		else predictedMovable[2] = true;
+		
+		if(equals(predictedBoards[3] = moveDown(), board)) predictedMovable[3] = false;
+		else predictedMovable[3] = true;
+		
+		if(!predictedMovable[0]&&!predictedMovable[1]&&!predictedMovable[2]&&!predictedMovable[3]) lose = true;
+	}
+	
+	
 	
 	protected void generateNewNumbers() {
 		// Name a list of 0 positions on the block
