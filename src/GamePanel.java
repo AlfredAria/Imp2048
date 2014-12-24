@@ -38,26 +38,14 @@ public class GamePanel extends JPanel implements KeyListener {
 			boardData = logic.moveDown();
 			break;
 		}
-		if((gameLost = logic.hasLost()) == true) {
-			
-		}
-		
-		if((gameWon  = logic.hasWon()) == true) {
-
-		}
 		repaint();
 	}
 	
 	public void paint(Graphics g) {
 		super.paint(g);
 		BlockRotate.print(boardData);
-		if(gameLost) {
-			System.out.println("Lost.");
-		}
-		if (gameWon) {
-			System.out.println("True.");			
-		}
-		
+		if (logic.getLose()) System.out.println("Lost.");
+		if (logic.getWon()) System.out.println("Won.");
 	}
 
 	@Override
